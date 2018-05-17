@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Modal, Header, Segment, Grid, Button, Icon, Input, List, Container } from 'semantic-ui-react';
 import Cell from './components/Cell.js';
+import CellButton from './components/CellButton.js';
 
 class App extends Component {
 
@@ -9,9 +10,9 @@ class App extends Component {
     // Initializing parameters
     this.state = {
       Cells: [],
-      inputRows: 7,
-      inputCols: 13,
-      inputBombs: 13,
+      inputRows: 13,
+      inputCols: 7,
+      inputBombs: 17,
       isFlagMode: false,
       message: "Have Fun !",
       modalOpen: false,
@@ -19,7 +20,7 @@ class App extends Component {
     this.state.rows = this.state.inputRows;
     this.state.cols = this.state.inputCols;
     this.state.bombs = this.state.inputBombs;
-
+    // Instantiate a game
     this.state.Cells = this.Instantiate();
   }
 
@@ -146,7 +147,6 @@ class App extends Component {
       let id = cell.id;
       // Save the flagged cells ids
       let Flagged = Cells.filter(cell => cell.state === "!").map(cell => cell.id);
-      console.log(Flagged)
       // Instanciate while the selected cell is not a bomb
       // Also try for the first 20 tries to have a safe cell
       let tries = 0;
@@ -216,66 +216,33 @@ class App extends Component {
 
   render() {
     let { message, inputCols, inputRows, inputBombs, isFlagMode, rows, cols, Cells } = this.state;
+    // Row Lists
     let Rows = [];
     if (Cells.length === rows * cols) {
-
+      // Create a first decorative Row
       let Cols = [];
       for (let idx = 0; idx < cols; idx++) {
-        Cols.push(
-          <Grid.Column key={rows * cols + idx} style={{ padding: "0" }}>
-            <Button inverted color='black' disabled size="massive" icon style={{ margin: "0", Height: "18px", Width: "18px" }}>
-              <Icon name={"minus"} />
-            </Button>
-          </Grid.Column >
-        );
+        Cols.push(<CellButton key={idx} />);
       }
-      Rows.push(<Grid.Row columns={cols} style={{ padding: "0" }} key={rows + 1} stretched centered verticalAlign="middle" textAlign="center">{Cols}</Grid.Row>);
-
-
+      Rows.push(<Grid.Row columns={cols} style={{ padding: "0" }} key={rows + 1} stretched
+        centered verticalAlign="middle" textAlign="center">{Cols}</Grid.Row>);
+      // Generate the grid from Cells
       for (let i = 0; i < rows; i++) {
         let Cols = [];
         for (let idx = 0; idx < cols; idx++) {
           let cell = Cells[i * cols + idx];
-          let icon;
-          switch (cell.state) {
-            case "?":
-              icon = <Icon name={"dot circle outline"} />;
-              break;
-            case "!":
-              icon = <Icon name={"flag checkered"} />;
-              break;
-            case "X":
-              icon = < Icon name={"bomb"} />;
-              break;
-            default:
-              icon = cell.state;
-            // icon = <Image src={imgtest} size='small' />;
-            // disabled={cell.state !== "?"}
-          }
-          Cols.push(
-            <Grid.Column key={cell.id} style={{ padding: "0" }}>
-              <Button size="massive" icon style={{ margin: "0", Height: "18px", Width: "18px" }} onClick={() => this.handleClick(cell)}>
-                {icon}
-              </Button>
-            </Grid.Column >
-          );
+          Cols.push(<CellButton key={idx} cell={cell} isFlagMode={isFlagMode} handleClick={this.handleClick} />);
         }
-        Rows.push(<Grid.Row columns={cols} style={{ padding: "0" }} key={i} stretched centered verticalAlign="middle" textAlign="center">{Cols}</Grid.Row>);
+        Rows.push(<Grid.Row columns={cols} style={{ padding: "0" }} key={i} stretched
+          centered verticalAlign="middle" textAlign="center">{Cols}</Grid.Row>);
       }
-
+      // Create a second decorative Row
       Cols = [];
       for (let idx = 0; idx < cols; idx++) {
-        Cols.push(
-          <Grid.Column key={rows * cols + idx} style={{ padding: "0" }}>
-            <Button inverted color='black' disabled size="massive" icon style={{ margin: "0", Height: "18px", Width: "18px" }}>
-              <Icon name={"minus"} />
-            </Button>
-          </Grid.Column >
-        );
+        Cols.push(<CellButton key={idx} />);
       }
-      Rows.push(<Grid.Row columns={cols} style={{ padding: "0" }} key={rows} stretched centered verticalAlign="middle" textAlign="center">{Cols}</Grid.Row>);
-
-
+      Rows.push(<Grid.Row columns={cols} style={{ padding: "0" }} key={rows} stretched
+        centered verticalAlign="middle" textAlign="center">{Cols}</Grid.Row>);
     }
 
     return (
@@ -288,8 +255,7 @@ class App extends Component {
             marginTop: '0px !important',
             marginLeft: 'auto',
             marginRight: 'auto'
-          }}
-        >
+          }}>
           <Header icon='browser' content='Impossible parameters ...' />
           <Modal.Content >
             <h3>Height, Width and Bombs should be greater than 1. Width can't be greater than 16 and there cannot be only bombs.</h3>
@@ -309,19 +275,22 @@ class App extends Component {
           </Header>
           <List horizontal>
             <List.Item>
-              <Input name="inputRows" value={inputRows} type="number" iconPosition='left' placeholder='Height' onChange={this.handleInputChange}>
+              <Input name="inputRows" value={inputRows} type="number" iconPosition='left'
+                placeholder='Height' onChange={this.handleInputChange}>
                 <Icon name='resize vertical' />
                 <input />
               </Input>
             </List.Item>
             <List.Item>
-              <Input name="inputCols" value={inputCols} type="number" iconPosition='left' placeholder='Width' onChange={this.handleInputChange}>
+              <Input name="inputCols" value={inputCols} type="number" iconPosition='left'
+                placeholder='Width' onChange={this.handleInputChange}>
                 <Icon name='resize horizontal' />
                 <input />
               </Input>
             </List.Item>
             <List.Item>
-              <Input name="inputBombs" value={inputBombs} type="number" iconPosition='left' placeholder='Bombs' onChange={this.handleInputChange}>
+              <Input name="inputBombs" value={inputBombs} type="number" iconPosition='left'
+                placeholder='Bombs' onChange={this.handleInputChange}>
                 <Icon name='bomb' />
                 <input />
               </Input>
