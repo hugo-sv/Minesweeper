@@ -16,6 +16,7 @@ class App extends Component {
       isFlagMode: false,
       message: "Have Fun !",
       modalOpen: false,
+      isEnded: false,
     }
     this.state.rows = this.state.inputRows;
     this.state.cols = this.state.inputCols;
@@ -64,6 +65,7 @@ class App extends Component {
           rows: parseInt(inputRows, 10),
           bombs: parseInt(inputBombs, 10),
           message: "Have Fun !",
+          isEnded: false,
         },
         // Set State Callback
         () => this.setState({ Cells: this.Instantiate() })
@@ -81,7 +83,7 @@ class App extends Component {
     // Revealing all cells
     this.state.Cells.map(cell => cell.onClick(false));
     // Updating message
-    this.setState({ message: "Game Over !" });
+    this.setState({ message: "Game Over !", isEnded: true });
   }
 
   Win = () => {
@@ -91,7 +93,7 @@ class App extends Component {
       cell => cell.isBomb && cell.state !== "!").map(
         cell => cell.onClick(true));
     // Updating message
-    this.setState({ message: "You won !" });
+    this.setState({ message: "You won !", isEnded: true });
   }
 
   GetNeighbors = (id, isRecursive, Cells) => {
@@ -137,7 +139,7 @@ class App extends Component {
 
   handleClick = (cell) => {
     // Handle click on a cell 
-    let { isFlagMode, rows, cols, Cells } = this.state;
+    let { isEnded, isFlagMode, rows, cols, Cells } = this.state;
     // Count unknown cells
     let Unknowned = Cells.filter(cell => cell.state === "?" || cell.state === "!").length;
     // If the player plays for the first time (without the flag tool)
@@ -166,7 +168,7 @@ class App extends Component {
         () => { this.toggleCell(cell); }
       );
     }
-    else {
+    else if (!isEnded) {
       this.toggleCell(cell);
     }
   }
