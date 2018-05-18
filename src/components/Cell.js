@@ -8,14 +8,14 @@ States :
 */
 
 class Cell {
-    constructor(id, isBomb, GetNeighbors) {
+    constructor(id, isBomb, CountNeighbors) {
         this.id = id;
         this.isBomb = isBomb;
         this.state = "?";
-        this.GetNeighbors = GetNeighbors;
+        this.CountNeighbors = CountNeighbors;
     }
 
-    onClick = (isFlagMode) => {
+    onToggle = (isFlagMode) => {
         // The cell is toggle with or without the flag mode tool
         if (isFlagMode) {
             // The flag mode tool is activated, change the state of the cell from flagged to un flagged and vice versa
@@ -33,7 +33,7 @@ class Cell {
             if (this.isBomb) {
                 this.state = "X";
             } else {
-                this.state = "" + this.GetNeighbors(this.id, true);
+                this.state = "" + this.CountNeighbors(this.id, true);
             }
             return true;
         }

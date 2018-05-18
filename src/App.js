@@ -15,7 +15,7 @@ class App extends Component {
       inputBombs: 17,
       isFlagMode: false,
       message: "Have Fun !",
-      modalOpen: false,
+      isModalOpen: false,
       isEnded: false,
     }
     this.state.rows = this.state.inputRows;
@@ -30,21 +30,21 @@ class App extends Component {
     let { rows, cols, bombs } = this.state;
     let Cells = [];
     // Generating randomly list of ids for bombs
-    var bombsIds = []
-    while (bombsIds.length < bombs) {
+    var BombIds = []
+    while (BombIds.length < bombs) {
       // Select a random cell
       let randomnumber = Math.floor(Math.random() * rows * cols);
       // Check if the cell has not already been selected
-      if (bombsIds.indexOf(randomnumber) > -1) continue;
-      bombsIds.push(randomnumber);
+      if (BombIds.indexOf(randomnumber) > -1) continue;
+      BombIds.push(randomnumber);
     }
     // Generating the grid
     for (let id = 0; id < rows * cols; id++) {
       Cells.push(
         new Cell(
           id,
-          bombsIds.indexOf(id) > -1,
-          this.GetNeighbors,
+          BombIds.indexOf(id) > -1,
+          this.CountNeighbors,
         ));
     }
     return Cells;
@@ -79,9 +79,9 @@ class App extends Component {
     // Removing flags
     this.state.Cells.filter(
       cell => cell.state === "!").map(
-        cell => cell.onClick(true));
+        cell => cell.onToggle(true));
     // Revealing all cells
-    this.state.Cells.map(cell => cell.onClick(false));
+    this.state.Cells.map(cell => cell.onToggle(false));
     // Updating message
     this.setState({ message: "Game Over !", isEnded: true });
   }
@@ -91,12 +91,12 @@ class App extends Component {
     // Adding flag to every bombs
     this.state.Cells.filter(
       cell => cell.isBomb && cell.state !== "!").map(
-        cell => cell.onClick(true));
+        cell => cell.onToggle(true));
     // Updating message
     this.setState({ message: "You won !", isEnded: true });
   }
 
-  GetNeighbors = (id, isRecursive, Cells) => {
+  CountNeighbors = (id, isRecursive, Cells) => {
     // On revealing, count the number of surrounding bombs
     // if isRecursive, recursively reveals the suroundings of a safe cells
     // Cells is an optional parameter 
@@ -129,9 +129,9 @@ class App extends Component {
         neiId => {
           let cell = Cells[neiId];
           // if the cell is flagged, unflag it
-          if (cell.state === "!") { cell.onClick(true); }
+          if (cell.state === "!") { cell.onToggle(true); }
           // Toggle the cell
-          return cell.onClick(false);
+          return cell.onToggle(false);
         });
     }
     return total;
@@ -141,9 +141,9 @@ class App extends Component {
     // Handle click on a cell 
     let { isEnded, isFlagMode, rows, cols, Cells } = this.state;
     // Count unknown cells
-    let Unknowned = Cells.filter(cell => cell.state === "?" || cell.state === "!").length;
+    let unknownedTotal = Cells.filter(cell => cell.state === "?" || cell.state === "!").length;
     // If the player plays for the first time (without the flag tool)
-    if (Unknowned === rows * cols && !isFlagMode) {
+    if (unknownedTotal === rows * cols && !isFlagMode) {
       // Reroll board until the selected cell is not a bomb
       // Save the ID
       let id = cell.id;
@@ -152,14 +152,14 @@ class App extends Component {
       // Instanciate while the selected cell is not a bomb
       // Also try for the first 20 tries to have a safe cell
       let tries = 0;
-      while (cell.isBomb || (this.GetNeighbors(id, false, Cells) > 0 && tries < 20)) {
+      while (cell.isBomb || (this.CountNeighbors(id, false, Cells) > 0 && tries < 20)) {
         tries += 1;
         Cells = this.Instantiate();
         cell = Cells[id];
       }
       // Retrieve the flagged cells if Cells has changed
       if (tries > 0) {
-        Flagged.map(id => Cells[id].onClick(true));
+        Flagged.map(id => Cells[id].onToggle(true));
       }
       // Update the new Cells
       this.setState(
@@ -177,16 +177,16 @@ class App extends Component {
     // Toggle the given cell
     let { isFlagMode, bombs, Cells } = this.state;
     // Click on the Cell, receive true if something has been updated
-    let updated = cell.onClick(isFlagMode);
+    let updated = cell.onToggle(isFlagMode);
     if (updated) {
       // Update the state (force re-render on changing an attribute of a cell)
       this.setState({ Cells: Cells });
       // Check if tool is not the flag mode 
       if (!isFlagMode) {
         // Count unknown cells
-        let Unknowned = Cells.filter(cell => cell.state === "?" || cell.state === "!").length;
+        let unknownedTotal = Cells.filter(cell => cell.state === "?" || cell.state === "!").length;
         // Check if the only remaining cells are bombs
-        if (Unknowned === bombs && !cell.isBomb) {
+        if (unknownedTotal === bombs && !cell.isBomb) {
           // The game is won
           this.Win();
         } else if (cell.isBomb) {
@@ -210,14 +210,14 @@ class App extends Component {
     this.setState({ [name]: value });
   }
 
-  handleOpen = () => this.setState({ modalOpen: true })
+  handleOpen = () => this.setState({ isModalOpen: true })
   // Called the modal (warning for incorrect input) is opened
 
-  handleClose = () => this.setState({ modalOpen: false })
+  handleClose = () => this.setState({ isModalOpen: false })
   // Called the modal (warning for incorrect input) is closed
 
   render() {
-    let { message, inputCols, inputRows, inputBombs, isFlagMode, rows, cols, Cells } = this.state;
+    let { isModalOpen, message, inputCols, inputRows, inputBombs, isFlagMode, rows, cols, Cells } = this.state;
     // Row Lists
     let Rows = [];
     if (Cells.length === rows * cols) {
@@ -250,7 +250,7 @@ class App extends Component {
     return (
       <div style={{ textAlign: "center" }}>
         <Modal
-          open={this.state.modalOpen}
+          open={isModalOpen}
           onClose={this.handleClose}
           size='small'
           style={{
